@@ -82,6 +82,8 @@ export class SimulationRenderer {
                 this.cubes.setMatrixAt(cubeIndex, this.matrix)
 
                 for (const face of cube.faces) {
+                    if (face.connected) continue
+
                     cube.getWorldFaceNormal(
                         body,
                         face,

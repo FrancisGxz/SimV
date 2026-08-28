@@ -4,13 +4,14 @@ import { Body } from './Body'
 import { Cube } from './Cube'
 import { SpatialGrid } from './SpatialGrid'
 import { CollisionSystem } from './CollisionSystem'
+import { BondingSystem } from './BondingSystem'
 import type { Contact } from './Contact'
 
 export class Simulation {
 
-    private static readonly INITIAL_CUBE_COUNT = 100
+    private static readonly INITIAL_CUBE_COUNT = 1000
 
-    public readonly worldHalfSize = 10
+    public readonly worldHalfSize = 25
 
     private static readonly MIN_INITIAL_SPEED = 0.3
     private static readonly MAX_INITIAL_SPEED = 2
@@ -29,11 +30,13 @@ export class Simulation {
     private static readonly tempImpulse = new THREE.Vector3()
     private static readonly tempCorrection = new THREE.Vector3()
 
+
     public readonly bodies: Body[] = []
     public tick = 0
 
     private readonly spatialGrid = new SpatialGrid(Simulation.SPATIAL_GRID_CELL_SIZE)
     private readonly collisionSystem = new CollisionSystem()
+    private readonly bondingSystem = new BondingSystem()
 
     private static readonly tempAxis = new THREE.Vector3()
     private static readonly tempDirection = new THREE.Vector3()
@@ -54,9 +57,15 @@ export class Simulation {
         }
 
         this.collisionSystem.processBatch( this.spatialGrid, this.collisionBatchIndex, Simulation.COLLISION_BATCH_COUNT)
-        this.resolveContacts()
-        this.collisionBatchIndex =
-            (this.collisionBatchIndex + 1) % Simulation.COLLISION_BATCH_COUNT
+        const bodiesChanged = this.resolveContacts()
+
+        if (bodiesChanged) {
+            this.spatialGrid.rebuild(this.bodies)
+            this.collisionBatchIndex = 0
+        } else {
+            this.collisionBatchIndex =
+                (this.collisionBatchIndex + 1) % Simulation.COLLISION_BATCH_COUNT
+        }
     }
 
     spawnCubes(count: number): void {
@@ -191,10 +200,35 @@ export class Simulation {
         return min + Math.random() * (max - min)
     }
 
-    private resolveContacts(): void {
+    private resolveContacts(): boolean {
+        const joins: Contact[] = []
+        const reservedBodies = new Set<number>()
+
         for (const contact of this.collisionSystem.getContacts()) {
+            if (!this.bondingSystem.canJoin(contact)) continue
+            if (reservedBodies.has(contact.firstBody.id) || reservedBodies.has(contact.secondBody.id)) continue
+
+            joins.push(contact)
+            reservedBodies.add(contact.firstBody.id)
+            reservedBodies.add(contact.secondBody.id)
+        }
+
+        for (const contact of this.collisionSystem.getContacts()) {
+            if (reservedBodies.has(contact.firstBody.id) || reservedBodies.has(contact.secondBody.id)) continue
             this.resolveContact(contact)
         }
+
+        for (const contact of joins) {
+            this.bondingSystem.join(contact)
+            this.removeBody(contact.secondBody)
+        }
+
+        return joins.length > 0
+    }
+    
+    private removeBody(body: Body): void {
+        const index = this.bodies.indexOf(body)
+        if (index !== -1) this.bodies.splice(index, 1)
     }
 
     private resolveContact(contact: Contact): void {

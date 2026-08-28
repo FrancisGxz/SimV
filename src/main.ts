@@ -1,43 +1,33 @@
-import * as THREE from 'three'
 import './style.css'
 
-const scene = new THREE.Scene()
+import { SimulationApp } from './SimulationApp'
 
-const camera = new THREE.PerspectiveCamera(
-    60,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
-)
+console.info('[App] Starting')
 
-camera.position.z = 5
+const app = new SimulationApp(document.body)
 
-const renderer = new THREE.WebGLRenderer({ antialias: true })
-renderer.setSize(window.innerWidth, window.innerHeight)
-document.body.appendChild(renderer.domElement)
-
-const geometry = new THREE.BoxGeometry(1, 1, 1)
-const material = new THREE.MeshNormalMaterial()
-const cube = new THREE.Mesh(geometry, material)
-
-scene.add(cube)
-
-function animate() {
-    cube.rotation.x += 0.01
-    cube.rotation.y += 0.01
-
-    renderer.render(scene, camera)
-    requestAnimationFrame(animate)
+try {
+    app.start()
+    console.info('[App] Started')
+} catch (error) {
+    console.error('[App] Failed to start', error)
+    throw error
 }
 
-requestAnimationFrame(animate)
+function shutdown(): void {
+    console.info('[App] Shutting down')
 
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight
-    camera.updateProjectionMatrix()
+    app.stop()
 
-    renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
-    )
+    console.info('[App] Shutdown complete')
+}
+
+window.addEventListener('beforeunload', shutdown)
+
+window.addEventListener('error', event => {
+    console.error('[App] Unhandled error', event.error)
+})
+
+window.addEventListener('unhandledrejection', event => {
+    console.error('[App] Unhandled promise rejection', event.reason)
 })

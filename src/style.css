@@ -4,8 +4,102 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    background: #121212;
+    color: #f2f2f2;
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+}
+
+body {
+    background: #121212;
 }
 
 canvas {
     display: block;
+}
+
+.stats-panel {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+
+    min-width: 170px;
+
+    padding: 10px 12px;
+
+    background:
+        rgba(20, 20, 20, 0.82);
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+
+    border-radius: 8px;
+
+    box-shadow:
+        0 4px 18px
+        rgba(0, 0, 0, 0.35);
+
+    backdrop-filter:
+        blur(6px);
+
+    -webkit-backdrop-filter:
+        blur(6px);
+
+    color: #eeeeee;
+
+    font-family:
+        "SFMono-Regular",
+        Consolas,
+        "Liberation Mono",
+        monospace;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+
+    pointer-events: none;
+
+    user-select: none;
+}
+
+.stats-title {
+    margin-bottom: 6px;
+
+    padding-bottom: 5px;
+
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+
+    color: #ffffff;
+
+    font-weight: 700;
+
+    letter-spacing: 0.04em;
+
+    text-transform: uppercase;
+}
+
+.stats-row {
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 24px;
+}
+
+.stats-row span:first-child {
+    color: #a9a9a9;
+}
+
+.stats-row span:last-child {
+    color: #ffffff;
+
+    font-weight: 600;
 }

@@ -3,6 +3,8 @@ import { SimulationRenderer } from './rendering/SimulationRenderer'
 import { SimulationRunner } from './SimulationRunner'
 import { CameraController } from './input/CameraController'
 import { StatsPanel } from './ui/StatsPanel'
+import { SimulationControls } from './ui/SimulationControls'
+
 
 export class SimulationApp {
     private readonly simulation: Simulation
@@ -11,6 +13,7 @@ export class SimulationApp {
     private readonly cameraController: CameraController
     private readonly statsPanel: StatsPanel
 
+    private readonly uiContainer: HTMLDivElement
     private lastFrameTime = performance.now()
     private animationFrameId: number | null = null
 
@@ -27,8 +30,13 @@ export class SimulationApp {
             this.renderer.getCamera(),
             this.renderer.getCanvas()
         )
+        
+        this.uiContainer = document.createElement('div')
+        this.uiContainer.className = 'simulation-ui'
+        this.container.appendChild(this.uiContainer)
 
-        this.statsPanel = new StatsPanel(this.container)
+        this.statsPanel = new StatsPanel(this.uiContainer)
+        new SimulationControls(this.uiContainer, this.simulation, this.runner)
     }
 
     start(): void {

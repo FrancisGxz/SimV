@@ -9,15 +9,12 @@ import type { Contact } from './Contact'
 
 export class Simulation {
 
-    private static readonly INITIAL_CUBE_COUNT = 1000
-
-    public readonly worldHalfSize = 25
-
-    private static readonly MIN_INITIAL_SPEED = 0.3
-    private static readonly MAX_INITIAL_SPEED = 2
-
-    private static readonly MIN_ANGULAR_SPEED = -2
-    private static readonly MAX_ANGULAR_SPEED = 2
+    public worldExtent = 100
+    public initialCubeCount = 1000
+    public minInitialSpeed = 0.3
+    public maxInitialSpeed = 2
+    public minInitialSpin = -2
+    public maxInitialSpin = 2
 
     private static readonly SPATIAL_GRID_CELL_SIZE = 2
     private static readonly COLLISION_BATCH_COUNT = 4
@@ -44,7 +41,7 @@ export class Simulation {
     private collisionBatchIndex = 0
 
     constructor() {
-        this.spawnCubes(Simulation.INITIAL_CUBE_COUNT)
+        this.spawnCubes(this.initialCubeCount)
         this.spatialGrid.rebuild(this.bodies)
     }
 
@@ -82,25 +79,25 @@ export class Simulation {
             body.position.copy(position)
         } else {
             body.position.set(
-                this.randomRange(-this.worldHalfSize + 1, this.worldHalfSize - 1),
-                this.randomRange(-this.worldHalfSize + 1, this.worldHalfSize - 1),
-                this.randomRange(-this.worldHalfSize + 1, this.worldHalfSize - 1)
+                this.randomRange(-this.worldExtent * 0.5 + 1, this.worldExtent * 0.5 - 1),
+                this.randomRange(-this.worldExtent * 0.5 + 1, this.worldExtent * 0.5 - 1),
+                this.randomRange(-this.worldExtent * 0.5 + 1, this.worldExtent * 0.5 - 1)
             )
         }
 
         this.randomUnitVector(Simulation.tempDirection)
 
         const speed = this.randomRange(
-            Simulation.MIN_INITIAL_SPEED,
-            Simulation.MAX_INITIAL_SPEED
+            this.minInitialSpeed,
+            this.maxInitialSpeed
         )
 
         body.linearVelocity.copy(Simulation.tempDirection).multiplyScalar(speed)
 
         body.angularVelocity.set(
-            this.randomRange(Simulation.MIN_ANGULAR_SPEED, Simulation.MAX_ANGULAR_SPEED),
-            this.randomRange(Simulation.MIN_ANGULAR_SPEED, Simulation.MAX_ANGULAR_SPEED),
-            this.randomRange(Simulation.MIN_ANGULAR_SPEED, Simulation.MAX_ANGULAR_SPEED)
+            this.randomRange(this.minInitialSpin, this.maxInitialSpin),
+            this.randomRange(this.minInitialSpin, this.maxInitialSpin),
+            this.randomRange(this.minInitialSpin, this.maxInitialSpin)
         )
 
         this.randomUnitVector(Simulation.tempAxis)
@@ -114,7 +111,7 @@ export class Simulation {
         return body
     }
 
-    reset(cubeCount = Simulation.INITIAL_CUBE_COUNT): void {
+    reset(cubeCount = this.initialCubeCount): void {
         this.bodies.length = 0
         this.tick = 0
         this.collisionBatchIndex = 0
@@ -156,8 +153,8 @@ export class Simulation {
 
     private resolveWorldBounds(body: Body): void {
         const radius = body.boundingRadius
-        const min = -this.worldHalfSize + radius
-        const max = this.worldHalfSize - radius
+        const min = -this.worldExtent * 0.5 + radius
+        const max = this.worldExtent * 0.5 - radius
 
         if (body.position.x < min) {
             body.position.x = min

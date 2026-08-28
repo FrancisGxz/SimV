@@ -6,91 +6,55 @@ body {
     overflow: hidden;
     background: #121212;
     color: #f2f2f2;
-    font-family:
-        Inter,
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
-}
-
-body {
-    background: #121212;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 canvas {
     display: block;
 }
 
-.stats-panel {
+.simulation-ui {
     position: fixed;
     top: 12px;
     right: 12px;
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 10;
+}
 
-    min-width: 170px;
-
+.stats-panel {
+    box-sizing: border-box;
+    width: 100%;
     padding: 10px 12px;
-
-    background:
-        rgba(20, 20, 20, 0.82);
-
-    border:
-        1px solid
-        rgba(255, 255, 255, 0.12);
-
+    background: rgba(20, 20, 20, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 8px;
-
-    box-shadow:
-        0 4px 18px
-        rgba(0, 0, 0, 0.35);
-
-    backdrop-filter:
-        blur(6px);
-
-    -webkit-backdrop-filter:
-        blur(6px);
-
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     color: #eeeeee;
-
-    font-family:
-        "SFMono-Regular",
-        Consolas,
-        "Liberation Mono",
-        monospace;
-
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
     font-size: 12px;
-
     line-height: 1.5;
-
     pointer-events: none;
-
     user-select: none;
 }
 
 .stats-title {
     margin-bottom: 6px;
-
     padding-bottom: 5px;
-
-    border-bottom:
-        1px solid
-        rgba(255, 255, 255, 0.1);
-
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     color: #ffffff;
-
     font-weight: 700;
-
     letter-spacing: 0.04em;
-
     text-transform: uppercase;
 }
 
 .stats-row {
     display: flex;
-
     justify-content: space-between;
-
     gap: 24px;
 }
 
@@ -100,6 +64,54 @@ canvas {
 
 .stats-row span:last-child {
     color: #ffffff;
-
     font-weight: 600;
+}
+
+.simulation-controls {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px;
+    background: rgba(20, 20, 20, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    color: #eeeeee;
+    font: 13px sans-serif;
+}
+
+.simulation-controls label {
+    display: grid;
+    grid-template-columns: 1fr 80px;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 7px;
+}
+
+.simulation-controls input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 6px;
+    background: #252525;
+    border: 1px solid #555;
+    border-radius: 3px;
+    color: #eeeeee;
+}
+
+.simulation-controls-buttons {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.simulation-controls button {
+    flex: 1;
+    padding: 6px;
+    background: #333333;
+    border: 1px solid #555555;
+    border-radius: 3px;
+    color: #eeeeee;
+    cursor: pointer;
+}
+
+.simulation-controls button:hover {
+    background: #444444;
 }

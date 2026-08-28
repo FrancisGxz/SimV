@@ -4,12 +4,13 @@ import { Body } from './Body'
 import { Cube } from './Cube'
 import { SpatialGrid } from './SpatialGrid'
 import { CollisionSystem } from './CollisionSystem'
+import type { Contact } from './Contact'
 
 export class Simulation {
 
-    private static readonly INITIAL_CUBE_COUNT = 2000
+    private static readonly INITIAL_CUBE_COUNT = 100
 
-    public readonly worldHalfSize = 100
+    public readonly worldHalfSize = 10
 
     private static readonly MIN_INITIAL_SPEED = 0.3
     private static readonly MAX_INITIAL_SPEED = 2
@@ -19,6 +20,14 @@ export class Simulation {
 
     private static readonly SPATIAL_GRID_CELL_SIZE = 2
     private static readonly COLLISION_BATCH_COUNT = 4
+
+    private static readonly COLLISION_RESTITUTION = 1.0
+    private static readonly COLLISION_POSITION_CORRECTION = 0.8
+    private static readonly COLLISION_TOLERANCE = 0.001
+
+    private static readonly tempRelativeVelocity = new THREE.Vector3()
+    private static readonly tempImpulse = new THREE.Vector3()
+    private static readonly tempCorrection = new THREE.Vector3()
 
     public readonly bodies: Body[] = []
     public tick = 0
@@ -45,7 +54,7 @@ export class Simulation {
         }
 
         this.collisionSystem.processBatch( this.spatialGrid, this.collisionBatchIndex, Simulation.COLLISION_BATCH_COUNT)
-
+        this.resolveContacts()
         this.collisionBatchIndex =
             (this.collisionBatchIndex + 1) % Simulation.COLLISION_BATCH_COUNT
     }
@@ -127,6 +136,8 @@ export class Simulation {
         return this.collisionSystem.lastPotentialCollisionCount
     }
 
+    getContacts(): readonly Contact[] { return this.collisionSystem.getContacts() }
+
     private integrateBodies(dt: number): void {
         for (const body of this.bodies) {
             body.integrate(dt)
@@ -178,5 +189,57 @@ export class Simulation {
 
     private randomRange(min: number, max: number): number {
         return min + Math.random() * (max - min)
+    }
+
+    private resolveContacts(): void {
+        for (const contact of this.collisionSystem.getContacts()) {
+            this.resolveContact(contact)
+        }
+    }
+
+    private resolveContact(contact: Contact): void {
+        const first = contact.firstBody
+        const second = contact.secondBody
+
+        Simulation.tempRelativeVelocity.subVectors(second.linearVelocity, first.linearVelocity)
+
+        const velocityAlongNormal = Simulation.tempRelativeVelocity.dot(contact.normal)
+
+        if (velocityAlongNormal < 0) {
+            const firstInverseMass = 1 / first.mass
+            const secondInverseMass = 1 / second.mass
+
+            const impulseMagnitude =
+                -(1 + Simulation.COLLISION_RESTITUTION) * velocityAlongNormal /
+                (firstInverseMass + secondInverseMass)
+
+            Simulation.tempImpulse.copy(contact.normal).multiplyScalar(impulseMagnitude)
+
+            first.linearVelocity.addScaledVector(Simulation.tempImpulse, -firstInverseMass)
+            second.linearVelocity.addScaledVector(Simulation.tempImpulse, secondInverseMass)
+        }
+
+        this.correctContactPosition(contact)
+    }
+
+    private correctContactPosition(contact: Contact): void {
+        if (contact.penetration <= Simulation.COLLISION_TOLERANCE) return
+
+        const first = contact.firstBody
+        const second = contact.secondBody
+
+        const firstInverseMass = 1 / first.mass
+        const secondInverseMass = 1 / second.mass
+        const inverseMassSum = firstInverseMass + secondInverseMass
+
+        const correctionMagnitude =
+            (contact.penetration - Simulation.COLLISION_TOLERANCE) *
+            Simulation.COLLISION_POSITION_CORRECTION /
+            inverseMassSum
+
+        Simulation.tempCorrection.copy(contact.normal).multiplyScalar(correctionMagnitude)
+
+        first.position.addScaledVector(Simulation.tempCorrection, -firstInverseMass)
+        second.position.addScaledVector(Simulation.tempCorrection, secondInverseMass)
     }
 }

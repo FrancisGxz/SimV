@@ -29,13 +29,13 @@ describe('Simulation', () => {
 
         const body = simulation.spawnCube()
 
-        body.position.set(simulation.worldHalfSize - 0.1, 0, 0)
+        body.position.set(simulation.worldExtent - 0.1, 0, 0)
         body.linearVelocity.set(10, 0, 0)
 
         simulation.update(1)
 
         expect(body.position.x).toBeLessThanOrEqual(
-            simulation.worldHalfSize - body.boundingRadius
+            simulation.worldExtent - body.boundingRadius
         )
 
         expect(body.linearVelocity.x).toBeLessThan(0)

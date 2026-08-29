@@ -10,9 +10,9 @@ import type { Contact } from './Contact'
 export class Simulation {
 
     public worldExtent = 100
-    public initialCubeCount = 1000
-    public minInitialSpeed = 0.3
-    public maxInitialSpeed = 2
+    public initialCubeCount = 2000
+    public minInitialSpeed = 0.8
+    public maxInitialSpeed = 4
     public minInitialSpin = -2
     public maxInitialSpin = 2
 
@@ -58,7 +58,6 @@ export class Simulation {
 
         if (bodiesChanged) {
             this.spatialGrid.rebuild(this.bodies)
-            this.collisionBatchIndex = 0
         } else {
             this.collisionBatchIndex =
                 (this.collisionBatchIndex + 1) % Simulation.COLLISION_BATCH_COUNT
@@ -272,5 +271,11 @@ export class Simulation {
 
         first.position.addScaledVector(Simulation.tempCorrection, -firstInverseMass)
         second.position.addScaledVector(Simulation.tempCorrection, secondInverseMass)
+    }
+
+    setBodyGrabbed(body: Body, grabbed: boolean): void {
+        body.grabbed = grabbed
+
+        this.spatialGrid.rebuild(this.bodies)
     }
 }

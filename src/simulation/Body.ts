@@ -16,7 +16,7 @@ export class Body {
 
     public mass = 1
     public boundingRadius = Math.sqrt(3) * 0.5
-
+    public grabbed = false
     constructor() {
         this.id = Body.nextId++
         this.recomputeMassProperties()
@@ -88,6 +88,7 @@ export class Body {
     }
 
     integrate(dt: number): void {
+         if (this.grabbed) return
         this.position.addScaledVector(this.linearVelocity, dt)
 
         const angularSpeed = this.angularVelocity.length()

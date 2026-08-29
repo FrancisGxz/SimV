@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 
 import { Simulation } from '../simulation/Simulation'
+import type { Body } from '../simulation/Body'
+import type { Cube } from '../simulation/Cube'
 
 const MAX_CUBES = 5000
 const NORMALS_PER_CUBE = 6
@@ -33,6 +35,8 @@ export class SimulationRenderer {
     private readonly cylinderUp = new THREE.Vector3(0, 1, 0)
 
     private readonly color = new THREE.Color()
+    private readonly cubeInstanceBodies: Body[] = []
+    private readonly cubeInstanceCubes: Cube[] = []
 
     constructor(container: HTMLElement) {
         this.scene.background = new THREE.Color(0x181818)
@@ -44,7 +48,7 @@ export class SimulationRenderer {
             1000
         )
 
-        this.camera.position.set(0, 0, 25)
+        this.camera.position.set(0, 0, 100)
 
         this.renderer = new THREE.WebGLRenderer({
             antialias: true
@@ -65,6 +69,8 @@ export class SimulationRenderer {
     }
 
     sync(simulation: Simulation): void {
+        this.cubeInstanceBodies.length = 0
+        this.cubeInstanceCubes.length = 0
         let cubeIndex = 0
         let normalIndex = 0
 
@@ -80,6 +86,8 @@ export class SimulationRenderer {
 
                 this.matrix.compose(this.position, this.rotation, this.cubeScale)
                 this.cubes.setMatrixAt(cubeIndex, this.matrix)
+                this.cubeInstanceBodies[cubeIndex] = body
+                this.cubeInstanceCubes[cubeIndex] = cube
 
                 for (const face of cube.faces) {
                     if (face.connected) continue
@@ -134,6 +142,9 @@ export class SimulationRenderer {
     public render(): void { this.renderer.render(this.scene, this.camera) }
     public getCamera(): THREE.PerspectiveCamera { return this.camera }
     public getCanvas(): HTMLCanvasElement { return this.renderer.domElement }
+    public getCubeMesh(): THREE.InstancedMesh { return this.cubes }
+    public getCubeBody(instanceId: number): Body | null { return this.cubeInstanceBodies[instanceId] ?? null }
+    public getCube(instanceId: number): Cube | null { return this.cubeInstanceCubes[instanceId] ?? null }
 
     private createCubeInstances(): THREE.InstancedMesh {
         const geometry = new THREE.BoxGeometry(1, 1, 1)

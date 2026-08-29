@@ -44,19 +44,22 @@ export class CollisionSystem {
         return this.contacts
     }
 
-    private processCandidate = (first: Body, second: Body): void => {
+    private processCandidate = (
+        firstBody: Body,
+        firstCube: Cube,
+        secondBody: Body,
+        secondCube: Cube
+    ): void => {
+        if (firstBody.grabbed || secondBody.grabbed) return
+
         this.lastCandidateCount++
 
-        if (!this.boundingSpheresOverlap(first, second)) return
+        if (!this.cubeBoundingSpheresOverlap(firstBody, firstCube, secondBody, secondCube)) return
 
         this.lastPotentialCollisionCount++
 
-        for (const firstCube of first.cubes) {
-            for (const secondCube of second.cubes) {
-                const contact = this.testCubeCollision(first, firstCube, second, secondCube)
-                if (contact) this.contacts.push(contact)
-            }
-        }
+        const contact = this.testCubeCollision(firstBody, firstCube, secondBody, secondCube)
+        if (contact) this.contacts.push(contact)
     }
 
     private testCubeCollision(firstBody: Body, firstCube: Cube, secondBody: Body, secondCube: Cube): Contact | null {
@@ -194,12 +197,19 @@ export class CollisionSystem {
         return bestFace
     }
 
-    private boundingSpheresOverlap(first: Body, second: Body): boolean {
-        const dx = first.position.x - second.position.x
-        const dy = first.position.y - second.position.y
-        const dz = first.position.z - second.position.z
-        const radius = first.boundingRadius + second.boundingRadius
+    private cubeBoundingSpheresOverlap(
+        firstBody: Body,
+        firstCube: Cube,
+        secondBody: Body,
+        secondCube: Cube
+    ): boolean {
+        firstCube.getWorldPosition(firstBody, CollisionSystem.firstCenter)
+        secondCube.getWorldPosition(secondBody, CollisionSystem.secondCenter)
 
-        return dx * dx + dy * dy + dz * dz <= radius * radius
+        const firstRadius = firstCube.scale.length() * 0.5
+        const secondRadius = secondCube.scale.length() * 0.5
+        const radius = firstRadius + secondRadius
+
+        return CollisionSystem.firstCenter.distanceToSquared(CollisionSystem.secondCenter) <= radius * radius
     }
 }

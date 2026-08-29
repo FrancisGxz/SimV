@@ -2,9 +2,9 @@ import { Simulation } from './simulation/Simulation'
 import { SimulationRenderer } from './rendering/SimulationRenderer'
 import { SimulationRunner } from './SimulationRunner'
 import { CameraController } from './input/CameraController'
+import { SimulationInteraction } from './input/SimulationInteraction'
 import { StatsPanel } from './ui/StatsPanel'
 import { SimulationControls } from './ui/SimulationControls'
-
 
 export class SimulationApp {
     private readonly simulation: Simulation
@@ -30,7 +30,9 @@ export class SimulationApp {
             this.renderer.getCamera(),
             this.renderer.getCanvas()
         )
-        
+
+        new SimulationInteraction( this.simulation, this.renderer)
+
         this.uiContainer = document.createElement('div')
         this.uiContainer.className = 'simulation-ui'
         this.container.appendChild(this.uiContainer)
@@ -58,7 +60,7 @@ export class SimulationApp {
     }
 
     private frame = (time: number): void => {
-        const frameDt = Math.min( (time - this.lastFrameTime) / 1000, 0.1)
+        const frameDt = Math.min((time - this.lastFrameTime) / 1000, 0.1)
 
         this.lastFrameTime = time
 
